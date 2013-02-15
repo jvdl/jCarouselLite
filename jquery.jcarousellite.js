@@ -17,13 +17,19 @@
  */
 (function($) {                                          // Compliant with jquery.noConflict()
 $.fn.jCarouselLite = function(o) {
-var timer, GO_SRC_BUTTON = 'button', GO_SRC_AUTO = 'auto';
+
+	var timer,
+		GO_SRC_BUTTON = 'button',
+		GO_SRC_AUTO = 'auto';
+
 	o = $.extend({
+
 		btnPrev: null,
 		btnNext: null,
 		btnGo: null,
 		mouseWheel: false,
 		auto: null,
+
 		autoStopOnUse:true, // true = stop the auto scrolling when carousel interacted with
 		autoResumeInterval:0, //if > 0 will enable the carousel to auto-restart after an interval.
 
@@ -42,8 +48,15 @@ var timer, GO_SRC_BUTTON = 'button', GO_SRC_AUTO = 'auto';
 
 	return this.each(function() {                           // Returns the element collection. Chainable.
 
-		var running = false, animCss=o.vertical?"top":"left", sizeCss=o.vertical?"height":"width";
-		var div = $(this), ul = $("ul", div), tLi = $("li", ul), tl = tLi.size(), v = o.visible;
+		var running = false,
+			animCss = o.vertical ? "top" : "left",
+			sizeCss = o.vertical ? "height" : "width",
+			div = $(this),
+			ul  = $("ul", div),
+			tLi = $("li", ul),
+			tl  = tLi.size(),
+			v   = o.visible,
+			li, itemLength, curr, liSize, ulSize, divSize;
 
 		if(o.circular) {
 			ul.prepend(tLi.slice(tl-v-1+1).clone())
@@ -51,45 +64,48 @@ var timer, GO_SRC_BUTTON = 'button', GO_SRC_AUTO = 'auto';
 			o.start += v;
 		}
 
-		var li = $("li", ul), itemLength = li.size(), curr = o.start;
+		li = $("li", ul);
+		itemLength = li.size();
+		curr = o.start;
+
 		div.css("visibility", "visible");
 
 		li.css({overflow: "hidden", float: o.vertical ? "none" : "left"});
 		ul.css({margin: "0", padding: "0", position: "relative", "list-style-type": "none", "z-index": "1"});
 		div.css({overflow: "hidden", position: "relative", "z-index": "2", left: "0px"});
 
-		var liSize = o.vertical ? height(li) : width(li);   // Full li size(incl margin)-Used for animation
-		var ulSize = liSize * itemLength;                   // size of full ul(total length, not just for the visible items)
-		var divSize = liSize * v;                           // size of entire div(total length for just the visible items)
+		liSize = o.vertical ? height(li) : width(li);   // Full li size(incl margin)-Used for animation
+		ulSize = liSize * itemLength;                   // size of full ul(total length, not just for the visible items)
+		divSize = liSize * v;                           // size of entire div(total length for just the visible items)
 
 		li.css({width: li.width(), height: li.height()});
-		ul.css(sizeCss, ulSize+"px").css(animCss, -(curr*liSize));
+		ul.css(sizeCss, ulSize + "px").css(animCss, -(curr * liSize));
 
 		div.css(sizeCss, divSize+"px");                     // Width of the DIV. length of visible images
 
 		if(o.btnPrev) {
 			$(o.btnPrev).click(function() {
-				return go(curr-o.scroll, GO_SRC_BUTTON);
+				return go(curr - o.scroll, GO_SRC_BUTTON);
 			});
 		}
 
 		if(o.btnNext) {
 			$(o.btnNext).click(function() {
-				return go(curr+o.scroll, GO_SRC_BUTTON);
+				return go(curr + o.scroll, GO_SRC_BUTTON);
 			});
 		}
 
 		if(o.btnGo) {
 			$.each(o.btnGo, function(i, val) {
 				$(val).click(function() {
-					return go(o.circular ? o.visible+i : i, GO_SRC_BUTTON);
+					return go( (o.circular ? o.visible + i : i), GO_SRC_BUTTON);
 				});
 			});
 		}
 
 		if(o.mouseWheel && div.mousewheel) {
 			div.mousewheel(function(e, d) {
-				return d>0 ? go(curr-o.scroll, GO_SRC_BUTTON) : go(curr+o.scroll, GO_SRC_BUTTON);
+				return d > 0 ? go(curr - o.scroll, GO_SRC_BUTTON) : go(curr + o.scroll, GO_SRC_BUTTON);
 			});
 		}
 
@@ -112,7 +128,7 @@ var timer, GO_SRC_BUTTON = 'button', GO_SRC_AUTO = 'auto';
 		}
 
 		function go(to, go_src) {
-			if (o.autoStopOnUse && go_src==GO_SRC_BUTTON) {
+			if (o.autoStopOnUse && go_src === GO_SRC_BUTTON) {
 				stopAuto();
 				if (o.autoResumeInterval>0) {
 					setTimeout(startAuto,o.autoResumeInterval);
@@ -127,12 +143,12 @@ var timer, GO_SRC_BUTTON = 'button', GO_SRC_AUTO = 'auto';
 					if(to<=o.start-v-1) {           // If first, then goto last
 						ul.css(animCss, -((itemLength-(v*2))*liSize)+"px");
 						// If "scroll" > 1, then the "to" might not be equal to the condition; it can be lesser depending on the number of elements.
-						curr = to==o.start-v-1 ? itemLength-(v*2)-1 : itemLength-(v*2)-o.scroll;
+						curr = to === o.start-v-1 ? itemLength-(v*2)-1 : itemLength-(v*2)-o.scroll;
 					}
 					else if(to>=itemLength-v+1) { // If last, then goto first
 						ul.css(animCss, -( (v) * liSize ) + "px" );
 						// If "scroll" > 1, then the "to" might not be equal to the condition; it can be greater depending on the number of elements.
-						curr = to==itemLength-v+1 ? v+1 : v+o.scroll;
+						curr = to === itemLength-v+1 ? v+1 : v+o.scroll;
 					}
 					else {
 						curr = to;
@@ -140,7 +156,7 @@ var timer, GO_SRC_BUTTON = 'button', GO_SRC_AUTO = 'auto';
 				}
 				else {                    // If non-circular and to points to first or last, we just return.
 					if(to<0 || to>itemLength-v) {
-						return;
+						return true;
 					}
 					else {
 						curr = to;
@@ -150,7 +166,7 @@ var timer, GO_SRC_BUTTON = 'button', GO_SRC_AUTO = 'auto';
 				//running = true;
 
 				ul.animate(
-					animCss == "left" ? { left: -(curr*liSize) } : { top: -(curr*liSize) } ,
+					animCss === "left" ? { left: -(curr*liSize) } : { top: -(curr*liSize) } ,
 					{
 						duration: o.speed,
 						easing: o.easing,
@@ -177,13 +193,13 @@ var timer, GO_SRC_BUTTON = 'button', GO_SRC_AUTO = 'auto';
 
 
 function css(el, prop) {
-    return parseInt($.css(el[0], prop)) || 0;
-};
+    return parseInt($.css(el[0], prop), 10) || 0;
+}
 function width(el) {
     return  el[0].offsetWidth + css(el, 'marginLeft') + css(el, 'marginRight');
-};
+}
 function height(el) {
     return el[0].offsetHeight + css(el, 'marginTop') + css(el, 'marginBottom');
-};
+}
 
 })(jQuery);
